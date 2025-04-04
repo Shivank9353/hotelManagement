@@ -1,1 +1,231 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+// Parent class - User
+class User {
+    private String name;
+    private String contact;
+    private String email;
+
+    public User(String name, String contact, String email) {
+        this.name = name;
+        this.contact = contact;
+        this.email = email;
+    }
+
+    // Getters
+    public String getName() { return name; }
+    public String getContact() { return contact; }
+    public String getEmail() { return email; }
+}
+
+// Child class - Customer
+class Customer extends User {
+    private int customerId;
+
+    public Customer(String name, String contact, String email, int customerId) {
+        super(name, contact, email);
+        this.customerId = customerId;
+    }
+
+    public int getCustomerId() { return customerId; }
+}
+
+
+
+
+---------------------------------------------
+// Abstract class - Room
+abstract class Room {
+    protected int roomNumber;
+    protected String roomType;
+    protected double price;
+    protected boolean isBooked;
+
+    public Room(int roomNumber, String roomType, double price) {
+        this.roomNumber = roomNumber;
+        this.roomType = roomType;
+        this.price = price;
+        this.isBooked = false;
+    }
+
+    public abstract void bookRoom();  // Abstract method
+    public abstract void checkoutRoom();
+
+    public boolean isAvailable() { return !isBooked; }
+
+    public void displayDetails() {
+        System.out.println("Room Number: " + roomNumber + ", Type: " + roomType + 
+                           ", Price: $" + price + ", Available: " + isAvailable());
+    }
+}
+
+// Concrete class - DeluxeRoom
+class DeluxeRoom extends Room {
+    public DeluxeRoom(int roomNumber) {
+        super(roomNumber, "Deluxe", 150.0);
+    }
+
+    @Override
+    public void bookRoom() {
+        if (!isBooked) {
+            isBooked = true;
+            System.out.println("Deluxe Room " + roomNumber + " booked successfully!");
+        } else {
+            System.out.println("Room already booked!");
+        }
+    }
+
+    @Override
+    public void checkoutRoom() {
+        if (isBooked) {
+            isBooked = false;
+            System.out.println("Checkout successful for Room " + roomNumber);
+        }
+    }
+}
+
+// Concrete class - SuiteRoom
+class SuiteRoom extends Room {
+    public SuiteRoom(int roomNumber) {
+        super(roomNumber, "Suite", 300.0);
+    }
+
+    @Override
+    public void bookRoom() {
+        if (!isBooked) {
+            isBooked = true;
+            System.out.println("Suite Room " + roomNumber + " booked successfully!");
+        } else {
+            System.out.println("Room already booked!");
+        }
+    }
+
+    @Override
+    public void checkoutRoom() {
+        if (isBooked) {
+            isBooked = false;
+            System.out.println("Checkout successful for Room " + roomNumber);
+        }
+    }
+}
+
+===============================================================================
+class Hotel {
+    private List<Room> rooms; // List to store available rooms
+    private Map<Integer, Customer> bookedRooms; // Mapping of room number to Customer
+
+    public Hotel() {
+        rooms = new ArrayList<>();
+        bookedRooms = new HashMap<>();
+        initializeRooms(); // Populate hotel with rooms
+    }
+
+    private void initializeRooms() {
+        rooms.add(new DeluxeRoom(101));
+        rooms.add(new DeluxeRoom(102));
+        rooms.add(new SuiteRoom(201));
+        rooms.add(new SuiteRoom(202));
+    }
+
+    // Display available rooms
+    public void showAvailableRooms() {
+        System.out.println("\nAvailable Rooms:");
+        for (Room room : rooms) {
+            if (room.isAvailable()) {
+                room.displayDetails();
+            }
+        }
+    }
+
+    // Book a room
+    public void bookRoom(int roomNumber, Customer customer) {
+        for (Room room : rooms) {
+            if (room.roomNumber == roomNumber && room.isAvailable()) {
+                room.bookRoom();
+                bookedRooms.put(roomNumber, customer);
+                return;
+            }
+        }
+        System.out.println("Room " + roomNumber + " is not available!");
+    }
+
+    // Checkout a customer
+    public void checkoutRoom(int roomNumber) {
+        for (Room room : rooms) {
+            if (room.roomNumber == roomNumber && !room.isAvailable()) {
+                room.checkoutRoom();
+                bookedRooms.remove(roomNumber);
+                return;
+            }
+        }
+        System.out.println("Room " + roomNumber + " is already vacant or does not exist!");
+    }
+
+    // Display booked rooms
+    public void showBookedRooms() {
+        System.out.println("\nBooked Rooms:");
+        for (Map.Entry<Integer, Customer> entry : bookedRooms.entrySet()) {
+            System.out.println("Room " + entry.getKey() + " is booked by " + entry.getValue().getName());
+        }
+    }
+}
+---------------------------------------------------------------------------------------------------
+
+import java.util.Scanner;
+
+public class HotelManagementSystem {
+    public static void main(String[] args) {
+        Hotel hotel = new Hotel();
+        Scanner scanner = new Scanner(System.in);
+
+        // Creating customers
+        Customer customer1 = new Customer("Alice", "9876543210", "alice@example.com", 101);
+        Customer customer2 = new Customer("Bob", "9999999999", "bob@example.com", 102);
+
+        while (true) {
+            System.out.println("\n------ Hotel Management System ------");
+            System.out.println("1. Show Available Rooms");
+            System.out.println("2. Book a Room");
+            System.out.println("3. Checkout from a Room");
+            System.out.println("4. Show Booked Rooms");
+            System.out.println("5. Exit");
+            System.out.print("Enter your choice: ");
+            
+            int choice = scanner.nextInt();
+
+            switch (choice) {
+                case 1:
+                    hotel.showAvailableRooms();
+                    break;
+                case 2:
+                    System.out.print("Enter room number to book: ");
+                    int roomNumber = scanner.nextInt();
+                    System.out.print("Enter customer name: ");
+                    scanner.nextLine(); // Consume newline
+                    String name = scanner.nextLine();
+                    Customer newCustomer = new Customer(name, "9999999999", "test@example.com", roomNumber);
+                    hotel.bookRoom(roomNumber, newCustomer);
+                    break;
+                case 3:
+                    System.out.print("Enter room number to checkout: ");
+                    int checkoutRoomNumber = scanner.nextInt();
+                    hotel.checkoutRoom(checkoutRoomNumber);
+                    break;
+                case 4:
+                    hotel.showBookedRooms();
+                    break;
+                case 5:
+                    System.out.println("Exiting the system...");
+                    scanner.close();
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Invalid choice! Try again.");
+            }
+        }
+    }
+}
 
